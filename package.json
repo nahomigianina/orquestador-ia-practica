@@ -1,8 +1,24 @@
 {
   "name": "orquestador-ia-practica",
   "version": "1.0.0",
+  "description": "Orquestador de IA con Gemini",
+  "main": "index.js",
   "type": "module",
   "dependencies": {
-    "@google/genai": "^0.1.2"
-  }
+    "@google/genai": "^2.6.0"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nahomigianina/orquestador-ia-practica.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/nahomigianina/orquestador-ia-practica/issues"
+  },
+  "homepage": "https://github.com/nahomigianina/orquestador-ia-practica#readme"
 }
