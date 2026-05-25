@@ -1,11 +1,7 @@
 {
   "name": "orquestador-ia-practica",
   "version": "1.0.0",
-  "description": "Práctica Unidad 4 - El Servidor como Orquestador de IA",
-  "main": "api/process.js",
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "type": "module",
   "dependencies": {
     "@google/genai": "^0.1.2"
   }
