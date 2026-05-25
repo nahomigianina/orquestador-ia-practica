@@ -5,5 +5,8 @@
   "main": "api/process.js",
   "keywords": [],
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "@google/genai": "^2.6.0"
+  }
 }

@@ -1,18 +1,16 @@
-// Definición de la Clase (Subtema 4.5)
+import { GoogleGenAI } from '@google/genai';
+
 class AIRequestHandler {
     constructor(rawText) {
         this.rawText = rawText;
         this.sanitizedText = this.sanitize(rawText);
     }
 
-    // Método para limpiar caracteres especiales usando expresiones regulares
     sanitize(text) {
         if (!text) return "";
-        // Elimina caracteres extraños manteniendo letras, números, espacios y acentos comunes
         return text.replace(/[^a-zA-Z0-9áéíóúÁÉÍÓÚñÑ .,;:!?]/g, '').trim();
     }
 
-    // Método para contar palabras usando estructuras de control
     getWordCount() {
         if (!this.sanitizedText) return 0;
         const words = this.sanitizedText.split(/\s+/);
@@ -20,34 +18,49 @@ class AIRequestHandler {
     }
 }
 
-// Handler del Servidor para Vercel (Manejo de peticiones POST - 4.4)
+// Handler del Servidor de Vercel
 export default async function handler(req, res) {
     if (req.method !== 'POST') {
-        return res.status(405).json({ error: 'Método no permitido. Usa POST.' });
+        return res.status(405).json({ error: 'Método no permitido.' });
     }
 
     const { proposal } = req.body;
 
-    // Validación mediante estructuras de control (4.1, 4.2)
-    if (!proposal || typeof proposal !== 'string') {
-        return res.status(400).json({ error: 'La propuesta está vacía o es inválida.' });
-    }
-
-    // Instanciación del objeto
+    // Validaciones básicas usando la clase
     const handlerInstance = new AIRequestHandler(proposal);
     const wordCount = handlerInstance.getWordCount();
 
-    // Validación de extensión mínima (Mínimo 10 palabras)
     if (wordCount < 10) {
         return res.status(400).json({ 
-            error: `La propuesta es muy corta. Tiene ${wordCount} palabras y el mínimo requerido son 10.` 
+            error: `La propuesta es muy corta. Tiene ${wordCount} palabras y se requieren mínimo 10.` 
         });
     }
 
-    // Respuesta exitosa del objeto del servidor (4.4)
-    return res.status(200).json({
-        message: "¡Listos para Gemini API!",
-        wordCount: wordCount,
-        sanitizedText: handlerInstance.sanitizedText
-    });
+    try {
+        // Seguridad (5.6): Leer la API Key desde las variables de entorno del sistema
+        const apiKey = process.env.GEMINI_API_KEY;
+        
+        if (!apiKey) {
+            return res.status(500).json({ error: 'Error de configuración: Clave de API no encontrada.' });
+        }
+
+        // Consumo del Servicio SaaS/API de Gemini
+        const ai = new GoogleGenAI({ apiKey: apiKey });
+        
+        const response = await ai.models.generateContent({
+            model: 'gemini-2.5-flash',
+            contents: `Analiza de forma muy breve la viabilidad técnica de la siguiente propuesta tecnológica: "${handlerInstance.sanitizedText}". Da tu respuesta en un máximo de tres renglones.`,
+        });
+
+        // Mandar la respuesta de la IA de regreso a la interfaz
+        return res.status(200).json({
+            message: "¡Análisis de Gemini completado con éxito!",
+            wordCount: wordCount,
+            aiResponse: response.text
+        });
+
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ error: 'Error al conectar con el servicio de Gemini en la nube.' });
+    }
 }
