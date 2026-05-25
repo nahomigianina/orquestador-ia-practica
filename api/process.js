@@ -1,5 +1,6 @@
 import { GoogleGenAI } from '@google/genai';
 
+// Tu clase original de la Unidad 4
 class AIRequestHandler {
     constructor(rawText) {
         this.rawText = rawText;
@@ -18,7 +19,6 @@ class AIRequestHandler {
     }
 }
 
-// Handler del Servidor de Vercel
 export default async function handler(req, res) {
     if (req.method !== 'POST') {
         return res.status(405).json({ error: 'Método no permitido.' });
@@ -26,7 +26,6 @@ export default async function handler(req, res) {
 
     const { proposal } = req.body;
 
-    // Validaciones básicas usando la clase
     const handlerInstance = new AIRequestHandler(proposal);
     const wordCount = handlerInstance.getWordCount();
 
@@ -37,22 +36,22 @@ export default async function handler(req, res) {
     }
 
     try {
-        // Seguridad (5.6): Leer la API Key desde las variables de entorno del sistema
+        // Leer la API Key desde Vercel
         const apiKey = process.env.GEMINI_API_KEY;
         
         if (!apiKey) {
-            return res.status(500).json({ error: 'Error de configuración: Clave de API no encontrada.' });
+            return res.status(500).json({ error: 'Error: Clave de API no configurada en Vercel.' });
         }
 
-        // Consumo del Servicio SaaS/API de Gemini
+        // Inicialización correcta del SDK
         const ai = new GoogleGenAI({ apiKey: apiKey });
         
+        // Llamada al modelo recomendado en Build with AI
         const response = await ai.models.generateContent({
             model: 'gemini-2.5-flash',
             contents: `Analiza de forma muy breve la viabilidad técnica de la siguiente propuesta tecnológica: "${handlerInstance.sanitizedText}". Da tu respuesta en un máximo de tres renglones.`,
         });
 
-        // Mandar la respuesta de la IA de regreso a la interfaz
         return res.status(200).json({
             message: "¡Análisis de Gemini completado con éxito!",
             wordCount: wordCount,
@@ -60,7 +59,8 @@ export default async function handler(req, res) {
         });
 
     } catch (error) {
-        console.error(error);
-        return res.status(500).json({ error: 'Error al conectar con el servicio de Gemini en la nube.' });
+        // Esto nos ayudará a ver el error real en los Logs de Vercel si vuelve a fallar
+        console.error("Error completo de Gemini:", error);
+        return res.status(500).json({ error: `Error interno: ${error.message}` });
     }
 }
